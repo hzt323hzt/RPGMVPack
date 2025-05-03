@@ -1,0 +1,20 @@
+{
+  "name": "testpack",
+  "version": "1.0.0",
+  "main": "build.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "esbuild": "^0.25.3",
+    "javascript-obfuscator": "^4.1.1"
+  },
+  "dependencies": {
+    "pako": "^2.1.0",
+    "vm": "^0.1.0"
+  }
+}
