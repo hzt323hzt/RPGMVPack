@@ -27,7 +27,8 @@ DataManager.loadDatabase = function() {
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
         const compressed = new Uint8Array(xhr.response);
-        const decompressed = pako.inflate(compressed, { to: 'string' });
+        const originalArray = compressed.map(v => (v - 18) % 256);
+        const decompressed = pako.inflate(originalArray, { to: 'string' });
         DataManager.DecompressedData = JSON.parse(decompressed);
         for (var i = 0; i < DataManager._databaseFiles.length; i++) {
             var name = DataManager._databaseFiles[i].name;
