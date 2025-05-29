@@ -7,15 +7,10 @@ PluginManager.loadScript = function(name) {
 PluginManager.setup($plugins);
 
 OLD_DataManager_loadDataFile = DataManager.loadDataFile;
-DataManager.loadDataFile = function(name, src, data=false) {
-    if(data){
-        window[name] = DataManager.DecompressedData[src];
-        DataManager.onLoad(window[name]);
-        DataManager.DecompressedData[src] = null;
-    }
-    else{
-        OLD_DataManager_loadDataFile(name,src);
-    }
+DataManager.loadDataFile = function(name, src) {
+    window[name] = DataManager.DecompressedData[src];
+    DataManager.onLoad(window[name]);
+    if(src.indexOf('Map')===-1) DataManager.DecompressedData[src] = null;
 };
 DataManager.loadDatabase = function() {
     var test = this.isBattleTest() || this.isEventTest();
@@ -33,7 +28,7 @@ DataManager.loadDatabase = function() {
         for (var i = 0; i < DataManager._databaseFiles.length; i++) {
             var name = DataManager._databaseFiles[i].name;
             var src = DataManager._databaseFiles[i].src;
-            DataManager.loadDataFile(name, prefix + src,true);
+            DataManager.loadDataFile(name, prefix + src);
         }
     };
     xhr.onerror = this._mapLoader || function() {

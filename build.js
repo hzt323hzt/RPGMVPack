@@ -1,36 +1,44 @@
 
 const dirname="Project3/www";
-const prod=false;
+const prod=true;
 
 const esbuild = require('esbuild');
 const obfuscator = require('javascript-obfuscator');
 const vm = require('vm');
 const fs = require('fs');
-const pako = require('./skeleton/js/pako.min.js');
-let srclist=[
-  'Actors.json',
-  'Classes.json',
-  'Skills.json',
-  'Items.json',
-  'Weapons.json',
-  'Armors.json',
-  'Enemies.json',
-  'Troops.json',
-  'States.json',
-  'Animations.json',
-  'Tilesets.json',
-  'CommonEvents.json',
-  'System.json',
-  'MapInfos.json'
-];
-function compressData(){
+const path = require('path');
 
+const pako = require('./skeleton/js/pako.min.js');
+// let srclist=[
+//   'Actors.json',
+//   'Classes.json',
+//   'Skills.json',
+//   'Items.json',
+//   'Weapons.json',
+//   'Armors.json',
+//   'Enemies.json',
+//   'Troops.json',
+//   'States.json',
+//   'Animations.json',
+//   'Tilesets.json',
+//   'CommonEvents.json',
+//   'System.json',
+//   'MapInfos.json'
+// ];
+function compressData(){
+  const folderPath = './'+dirname+'/data';
   let content={};
-  srclist.forEach((name)=>{
-    const codep = fs.readFileSync('./'+dirname+'/data/'+name, 'utf8');
-    content[name]=JSON.parse(codep);
+  const files = fs.readdirSync(folderPath);
+  files.forEach(file => {
+    const filePath = path.join(folderPath, file);
+    // console.log('read data file:'+filePath);
+    const codep = fs.readFileSync(filePath, 'utf8');
+    const updatedp = codep.replace(/(?<!var\s)\$data(\w*)/g, "BMScope['\$data$1']")
+    .replace(/(?<!var\s)\$game(\w*)/g, "BMScope['\$game$1']")
+    .replace(/(?<!var\s)\$test(\w*)/g, "BMScope['\$test$1']")
+    content[file]=JSON.parse(updatedp);
     if(prod){
-      fs.renameSync('./'+dirname+'/data/'+name,'./bak/data/'+name);
+      fs.renameSync('./'+dirname+'/data/'+file,'./bak/data/'+file);
     }
   });
   const compressed =  new Uint8Array(pako.deflate(JSON.stringify(content), { to: 'string' }));
@@ -87,7 +95,7 @@ function genBakDir(){
   fs.cpSync("./skeleton/index.html",'./'+dirname+'/index.html');
   fs.cpSync('./skeleton/js/pako.min.js','./'+dirname+'/js/libs/pako.min.js');
 }
-const regexForExtraJson = /_databaseFiles\.push\(\{name:\s*'[^']+',\s*src:\s*"([^"]+\.json)"\}\)/g;
+// const regexForExtraJson = /_databaseFiles\.push\(\{name:\s*'[^']+',\s*src:\s*"([^"]+\.json)"\}\)/g;
 const regexForName = /^function\s+([a-zA-Z_$][\w$]*)\s*\(.*?\)|^var\s+(\$[a-zA-Z_$][\w$]*)/gm;
 var writeScope=true;
 async function appendFiles() {
@@ -105,12 +113,12 @@ async function appendFiles() {
           fs.appendFileSync(target, `\nconst BMScope={${scope.toString()}}\n`);
           writeScope=false;
         }
-        let match;
-        while ((match = regexForExtraJson.exec(replacedContent)) !== null) {
-            const fileName = match[1];
-            console.log("Find extra json file:", fileName);
-            srclist.push(fileName);
-        }
+        // let match;
+        // while ((match = regexForExtraJson.exec(replacedContent)) !== null) {
+        //     const fileName = match[1];
+        //     console.log("Find extra json file:", fileName);
+        //     srclist.push(fileName);
+        // }
       }
       if(writeScope){
         let match;      
